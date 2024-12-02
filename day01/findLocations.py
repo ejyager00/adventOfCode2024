@@ -30,8 +30,8 @@ def get_similarity(list1, list2):
             total_similarity += id
     return total_similarity
 
-
-first_list, second_list = parse_input("input.txt")
-    
-print(f"Total distance: {get_distance(first_list, second_list)}")
-print(f"Total similarity: {get_similarity(first_list, second_list)}")
+if __name__ == '__main__':
+    first_list, second_list = parse_input("input.txt")
+        
+    print(f"Total distance: {get_distance(first_list, second_list)}")
+    print(f"Total similarity: {get_similarity(first_list, second_list)}")
