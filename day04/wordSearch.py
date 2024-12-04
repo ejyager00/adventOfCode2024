@@ -38,9 +38,26 @@ def count_matches(puzzle: list[str], word: str) -> int:
     return matches
 
 def count_x_matches(puzzle: list[str], word: str) -> int:
-    pass
+    matches = 0
+    word = word.upper()[:3]
+    h = len(puzzle)
+    w = len(puzzle[0])
+    for i in range(1,h-1):
+        for j in range(1,w-1):
+            if puzzle[i][j]==word[1]:
+                if puzzle[i-1][j-1]==word[0] and puzzle[i+1][j+1]==word[2]:
+                    if puzzle[i-1][j+1]==word[0] and puzzle[i+1][j-1]==word[2]:
+                        matches += 1
+                    if puzzle[i+1][j-1]==word[0] and puzzle[i-1][j+1]==word[2]:
+                        matches += 1
+                if puzzle[i+1][j+1]==word[0] and puzzle[i-1][j-1]==word[2]:
+                    if puzzle[i-1][j+1]==word[0] and puzzle[i+1][j-1]==word[2]:
+                        matches += 1
+                    if puzzle[i+1][j-1]==word[0] and puzzle[i-1][j+1]==word[2]:
+                        matches += 1
+    return matches
 
 if __name__ == '__main__':
     puzzle = parse_input("day04/input.txt")
     print(f"Number of XMASs: {count_matches(puzzle, 'XMAS')}")
-    # print(f"Number of X-MASs: {count_x_matches(puzzle, 'MAS')}")
+    print(f"Number of X-MASs: {count_x_matches(puzzle, 'MAS')}")
