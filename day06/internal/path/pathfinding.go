@@ -1,13 +1,20 @@
 package path
 
-import "github.com/golang-collections/collections/set"
+import "fmt"
 
 const (
 	Up = iota
+	Right
 	Down
 	Left
-	Right
 )
+
+var DIRECTION_DIFFS = [4][2]int{
+	{-1, 0},
+	{0, 1},
+	{1, 0},
+	{0, -1},
+}
 
 func FindFirstArrow(grid *[][]byte) (int, int) {
 	for y := range *grid {
@@ -35,6 +42,23 @@ func GetDirection(guard byte) int {
 	return -1
 }
 
-func StepGuard(grid *[][]byte, y *int, x *int, direction *int, visited *set.Set) bool {
-	return false
+func CountGuardSteps(grid *[][]byte, y int, x int, direction int) int {
+	fmt.Printf("Current position: %d, %d\n", y, x)
+	var visited map[string]struct{} = make(map[string]struct{})
+	visited[fmt.Sprintf("%d,%d", y, x)] = struct{}{}
+	ydiff, xdiff := DIRECTION_DIFFS[direction][0], DIRECTION_DIFFS[direction][1]
+	for y+ydiff >= 0 && x+xdiff >= 0 && y+ydiff < len(*grid) && x+xdiff < len((*grid)[0]) {
+		x = x + xdiff
+		y = y + ydiff
+		if (*grid)[y][x] == '#' {
+			direction = (direction + 1) % 4
+			y = y - ydiff + DIRECTION_DIFFS[direction][0]
+			x = x - xdiff + DIRECTION_DIFFS[direction][1]
+			ydiff = DIRECTION_DIFFS[direction][0]
+			xdiff = DIRECTION_DIFFS[direction][1]
+		}
+		fmt.Printf("Current position: %d, %d\n", y, x)
+		visited[fmt.Sprintf("%d,%d", y, x)] = struct{}{}
+	}
+	return len(visited)
 }

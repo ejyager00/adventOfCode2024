@@ -12,8 +12,7 @@ import (
 func countGuardCoverage(situationMap [][]byte) int {
 	y, x := path.FindFirstArrow(&situationMap)
 	direction := path.GetDirection(situationMap[y][x])
-	fmt.Println("Starting at ", y, x, " facing ", direction)
-	return 0
+	return path.CountGuardSteps(&situationMap, y, x, direction)
 }
 
 var rootCmd = &cobra.Command{
