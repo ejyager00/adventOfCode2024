@@ -1,0 +1,34 @@
+package path
+
+const (
+	Up = iota
+	Down
+	Left
+	Right
+)
+
+func FindFirstArrow(grid *[][]byte) (int, int) {
+	for y := range *grid {
+		for x := range (*grid)[y] {
+			switch (*grid)[y][x] {
+			case '^', '>', '<', 'v':
+				return y, x
+			}
+		}
+	}
+	return -1, -1
+}
+
+func GetDirection(guard byte) int {
+	switch guard {
+	case '^':
+		return Up
+	case '>':
+		return Right
+	case '<':
+		return Left
+	case 'v':
+		return Down
+	}
+	return -1
+}
