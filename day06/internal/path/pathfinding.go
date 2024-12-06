@@ -1,5 +1,7 @@
 package path
 
+import "github.com/golang-collections/collections/set"
+
 const (
 	Up = iota
 	Down
@@ -31,4 +33,8 @@ func GetDirection(guard byte) int {
 		return Down
 	}
 	return -1
+}
+
+func StepGuard(grid *[][]byte, y *int, x *int, direction *int, visited *set.Set) bool {
+	return false
 }
