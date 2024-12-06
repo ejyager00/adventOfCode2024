@@ -1,4 +1,5 @@
 import re
+import sys
 
 MUL_INSTRUCT_REGEX = re.compile(r"mul\([0-9]{1,3},[0-9]{1,3}\)")
 NUM_REGEX = re.compile(r"[0-9]{1,3}")
@@ -36,6 +37,16 @@ def conditional_sum_product(memory: str) -> int:
     
     return total
 if __name__ == "__main__":
-    mem_dump = parse_input("day03/input.txt")
-    print(f"The sum of the products is {instruct_sum_product(get_mul_instructions(mem_dump))}.")
-    print(f"The sum of the products using conditionals is {conditional_sum_product(mem_dump)}.")
+    if len(sys.argv) != 2:
+        print("Usage: python checkReports.py <input_file>")
+        sys.exit(1)
+        
+    input_file = sys.argv[1]
+    
+    try:
+        mem_dump = parse_input(input_file)
+        print(f"The sum of the products is {instruct_sum_product(get_mul_instructions(mem_dump))}.")
+        print(f"The sum of the products using conditionals is {conditional_sum_product(mem_dump)}.")
+    except FileNotFoundError:
+        print(f"Error: Could not find input file '{input_file}'")
+

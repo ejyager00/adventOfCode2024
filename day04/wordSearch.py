@@ -1,3 +1,5 @@
+import sys
+
 def parse_input(filename: str) -> str:
     with open(filename) as f:
         return [line.strip().upper() for line in f]
@@ -58,6 +60,15 @@ def count_x_matches(puzzle: list[str], word: str) -> int:
     return matches
 
 if __name__ == '__main__':
-    puzzle = parse_input("day04/input.txt")
-    print(f"Number of XMASs: {count_matches(puzzle, 'XMAS')}")
-    print(f"Number of X-MASs: {count_x_matches(puzzle, 'MAS')}")
+    if len(sys.argv) != 2:
+        print("Usage: python checkReports.py <input_file>")
+        sys.exit(1)
+        
+    input_file = sys.argv[1]
+    
+    try:
+        puzzle = parse_input(input_file)
+        print(f"Number of XMASs: {count_matches(puzzle, 'XMAS')}")
+        print(f"Number of X-MASs: {count_x_matches(puzzle, 'MAS')}")
+    except FileNotFoundError:
+        print(f"Error: Could not find input file '{input_file}'")

@@ -1,3 +1,5 @@
+import sys
+
 def parse_input(filename: str):
     rules = {}
     updates = []
@@ -41,6 +43,16 @@ def count_invalid_updates(updates: list[list[int]], rules: dict):
     return sum([order_update(update, rules)[int(len(update)/2)] if not valid_update(update, rules) else 0 for update in updates])
 
 if __name__ == '__main__':
-    rules, updates = parse_input("day05/input.txt")
-    print(f"sum of middle page of valid updates = {count_valid_updates(updates, rules)}")
-    print(f"sum of middle page of corrected updates = {count_invalid_updates(updates, rules)}")
+    if len(sys.argv) != 2:
+        print("Usage: python checkReports.py <input_file>")
+        sys.exit(1)
+        
+    input_file = sys.argv[1]
+    
+    try:
+        rules, updates = parse_input(input_file)
+        print(f"sum of middle page of valid updates = {count_valid_updates(updates, rules)}")
+        print(f"sum of middle page of corrected updates = {count_invalid_updates(updates, rules)}")
+    except FileNotFoundError:
+        print(f"Error: Could not find input file '{input_file}'")
+    

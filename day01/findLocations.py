@@ -1,3 +1,5 @@
+import sys
+
 def parse_input(filename):
     first_nums = []
     second_nums = []
@@ -31,7 +33,15 @@ def get_similarity(list1, list2):
     return total_similarity
 
 if __name__ == '__main__':
-    first_list, second_list = parse_input("input.txt")
+    if len(sys.argv) != 2:
+        print("Usage: python findLocations.py <input_file>")
+        sys.exit(1)
         
-    print(f"Total distance: {get_distance(first_list, second_list)}")
-    print(f"Total similarity: {get_similarity(first_list, second_list)}")
+    input_file = sys.argv[1]
+    
+    try:
+        first_list, second_list = parse_input(input_file)
+        print(f"Total distance: {get_distance(first_list, second_list)}")
+        print(f"Total similarity: {get_similarity(first_list, second_list)}")
+    except FileNotFoundError:
+        print(f"Error: Could not find input file '{input_file}'")

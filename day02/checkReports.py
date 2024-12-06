@@ -1,3 +1,5 @@
+import sys
+
 def parse_input(filename: str) -> list[list[int]]:
     with open(filename) as f:
         for line in f:
@@ -27,5 +29,14 @@ def count_safe_reports(reports: list[list[int]], tolerance: int = 0) -> int:
     return sum([report_is_safe(r, tolerance) for r in reports])
 
 if __name__ == '__main__':
-    print(f"Safe report count: {count_safe_reports(parse_input('input.txt'))}")
-    print(f"Safe report count: {count_safe_reports(parse_input('input.txt'), 1)}")
+    if len(sys.argv) != 2:
+        print("Usage: python checkReports.py <input_file>")
+        sys.exit(1)
+        
+    input_file = sys.argv[1]
+    
+    try:
+        print(f"Safe report count: {count_safe_reports(parse_input(input_file))}")
+        print(f"Safe report count: {count_safe_reports(parse_input(input_file), 1)}")
+    except FileNotFoundError:
+        print(f"Error: Could not find input file '{input_file}'")
