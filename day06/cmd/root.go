@@ -12,7 +12,27 @@ import (
 func countGuardCoverage(situationMap [][]byte) int {
 	y, x := path.FindFirstArrow(&situationMap)
 	direction := path.GetDirection(situationMap[y][x])
-	return path.CountGuardSteps(&situationMap, y, x, direction)
+	count, _ := path.CountGuardSteps(&situationMap, y, x, direction)
+	return count
+}
+
+func identifyPossibleLoops(situationMap [][]byte) int {
+	y, x := path.FindFirstArrow(&situationMap)
+	direction := path.GetDirection(situationMap[y][x])
+	loops := 0
+	for i, row := range situationMap {
+		for j, char := range row {
+			if char == '.' {
+				situationMap[i][j] = '#'
+				_, isLoop := path.CountGuardSteps(&situationMap, y, x, direction)
+				if isLoop {
+					loops++
+				}
+				situationMap[i][j] = '.'
+			}
+		}
+	}
+	return loops
 }
 
 var rootCmd = &cobra.Command{
@@ -27,6 +47,7 @@ var rootCmd = &cobra.Command{
 			return
 		}
 		fmt.Printf("The guard visited %d positions.\n", countGuardCoverage(situationMap))
+		fmt.Printf("There are %d possible ways to force a loop.\n", identifyPossibleLoops(situationMap))
 	},
 }
 
