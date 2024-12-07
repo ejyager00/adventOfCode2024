@@ -25,13 +25,17 @@ func listContains(s *[]int, e int) bool {
 	return false
 }
 
-func mapContains(visited *map[string][]int, y int, x int, d int) bool {
+func mapContains(visited *map[string][]int, y, x, d int) bool {
 	if dirs, ok := (*visited)[fmt.Sprintf("%d,%d", y, x)]; !ok {
 		return false
 	} else if listContains(&dirs, d) {
 		return true
 	}
 	return false
+}
+
+func isValidPosition(grid *[][]byte, y, x int) bool {
+	return y >= 0 && x >= 0 && y < len(*grid) && x < len((*grid)[0])
 }
 
 func FindFirstArrow(grid *[][]byte) (int, int) {
@@ -60,25 +64,23 @@ func GetDirection(guard byte) int {
 	return -1
 }
 
-func CountGuardSteps(grid *[][]byte, y int, x int, direction int) (int, bool) {
-	var visited map[string][]int = make(map[string][]int)
-	// visited[fmt.Sprintf("%d,%d", y, x)] = []int{direction}
-	// ydiff, xdiff := DIRECTION_DIFFS[direction][0], DIRECTION_DIFFS[direction][1]
-	for y >= 0 && x >= 0 && y < len(*grid) && x < len((*grid)[0]) && !mapContains(&visited, y, x, direction) {
-		newKey := fmt.Sprintf("%d,%d", y, x)
-		if dirs, ok := visited[newKey]; ok {
-			visited[newKey] = append(dirs, direction)
+func CountGuardSteps(grid *[][]byte, y, x, direction int) (int, bool) {
+	visited := make(map[string][]int)
+	for isValidPosition(grid, y, x) && !mapContains(&visited, y, x, direction) {
+		key := fmt.Sprintf("%d,%d", y, x)
+		if dirs, exists := visited[key]; exists {
+			visited[key] = append(dirs, direction)
 		} else {
-			visited[newKey] = []int{direction}
+			visited[key] = []int{direction}
 		}
-		ydiff, xdiff := DIRECTION_DIFFS[direction][0], DIRECTION_DIFFS[direction][1]
-		y += ydiff
-		x += xdiff
-		if y >= 0 && x >= 0 && y < len(*grid) && x < len((*grid)[0]) && (*grid)[y][x] == '#' {
+		y += DIRECTION_DIFFS[direction][0]
+		x += DIRECTION_DIFFS[direction][1]
+		if isValidPosition(grid, y, x) && (*grid)[y][x] == '#' {
+			y -= DIRECTION_DIFFS[direction][0]
+			x -= DIRECTION_DIFFS[direction][1]
 			direction = (direction + 1) % 4
-			y -= ydiff
-			x -= xdiff
 		}
 	}
+
 	return len(visited), mapContains(&visited, y, x, direction)
 }
