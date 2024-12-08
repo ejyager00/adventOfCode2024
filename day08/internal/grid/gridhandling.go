@@ -62,3 +62,18 @@ func LocateAntinodes(antennas [][]int, width, height int) *map[string]struct{} {
 	}
 	return &antinodes
 }
+
+func LocateAllAntinodes(antennas [][]int, width, height int) *map[string]struct{} {
+	antinodes := make(map[string]struct{})
+	for i, a := range antennas {
+		for _, b := range antennas[i+1:] {
+			dx := a[0] - b[0]
+			dy := a[1] - b[1]
+			for i := 0; conditionalPut(&antinodes, a[0]+i*dx, a[1]+i*dy, width, height); i++ {
+			}
+			for i := 0; conditionalPut(&antinodes, b[0]-i*dx, b[1]-i*dy, width, height); i++ {
+			}
+		}
+	}
+	return &antinodes
+}

@@ -11,15 +11,22 @@ import (
 )
 
 func countAntinodes(antennaMap [][]byte) int {
-	//fmt.Println(grid.GridToString(&antennaMap, nil))
 	locations := grid.LocateAntennas(antennaMap)
 	antinodes := make(map[string]struct{})
 	w, h := len(antennaMap[0]), len(antennaMap)
 	for _, locs := range locations {
 		maps.AddAll(&antinodes, grid.LocateAntinodes(locs, w, h))
 	}
-	//fmt.Println()
-	//fmt.Println(grid.GridToString(&antennaMap, &antinodes))
+	return len(antinodes)
+}
+
+func countAllAntinodes(antennaMap [][]byte) int {
+	locations := grid.LocateAntennas(antennaMap)
+	antinodes := make(map[string]struct{})
+	w, h := len(antennaMap[0]), len(antennaMap)
+	for _, locs := range locations {
+		maps.AddAll(&antinodes, grid.LocateAllAntinodes(locs, w, h))
+	}
 	return len(antinodes)
 }
 
@@ -35,6 +42,7 @@ var rootCmd = &cobra.Command{
 			return
 		}
 		fmt.Printf("There are %d unique antinode locations.\n", countAntinodes(antennaMap))
+		fmt.Printf("There are %d unique antinode locations when accounting for resonant harmonics.\n", countAllAntinodes(antennaMap))
 	},
 }
 
