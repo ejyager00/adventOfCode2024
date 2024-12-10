@@ -48,6 +48,18 @@ def count_paths(G, start_num, end_num):
     
     return path_count
 
+def count_unique_paths(G, start_num, end_num):
+    start_nodes = [node for node, data in G.nodes(data=True) if data.get('value') == start_num]
+    end_nodes = [node for node, data in G.nodes(data=True) if data.get('value') == end_num]
+    
+    path_count = 0
+    
+    for start in start_nodes:
+        for end in end_nodes:
+            path_count += len(list(networkx.all_simple_paths(G, start, end)))
+    
+    return path_count
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Usage: python checkReports.py <input_file>")
@@ -59,5 +71,6 @@ if __name__ == '__main__':
         top_map = parse_input(input_file)
         graph = build_graph(top_map)
         print(f"Total paths: {count_paths(graph, 0, 9)}")
+        print(f"Total unique paths: {count_unique_paths(graph, 0, 9)}")
     except FileNotFoundError:
         print(f"Error: Could not find input file '{input_file}'")
