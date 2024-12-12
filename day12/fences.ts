@@ -63,11 +63,9 @@ function build_simple_regions(garden: string[]): Region[] {
 function merge_regions(regions: Region[]): Region[] {
   let changed = true;
   let current_regions = [...regions];
-
   while (changed) {
     changed = false;
     const new_regions: Region[] = [current_regions[0]];
-
     for (let i = 1; i < current_regions.length; i++) {
       let added = false;
       for (const region of new_regions) {
@@ -97,26 +95,58 @@ function identify_regions(garden: string[]): Region[] {
 function get_perimeter(plots: Set<string>): number {
   let perimeter = 0;
   for (const plot of plots) {
-    let contribution = 4;
     const [i, j] = plot.split(",").map(Number);
-    if (plots.has(`${i + 1},${j}`)) contribution--;
-    if (plots.has(`${i - 1},${j}`)) contribution--;
-    if (plots.has(`${i},${j + 1}`)) contribution--;
-    if (plots.has(`${i},${j - 1}`)) contribution--;
-    perimeter += contribution;
+    const neighbors = [
+      `${i + 1},${j}`,
+      `${i - 1},${j}`,
+      `${i},${j + 1}`,
+      `${i},${j - 1}`,
+    ];
+    perimeter += neighbors.filter((neighbor) => !plots.has(neighbor)).length;
   }
   return perimeter;
 }
 
-function region_fence_cost(region: Region): number {
+function get_number_of_sides(plots: Set<string>): number {
+  let sides = 0;
+  const diffs = [1, -1];
+  for (const plot of plots) {
+    const [i, j] = plot.split(",").map(Number);
+    sides += diffs
+      .flatMap((dx) => diffs.map((dy) => [dx, dy]))
+      .filter(([dx, dy]) =>
+        plots.has(`${i + dx},${j}`) &&
+        plots.has(`${i},${j + dy}`) &&
+        !plots.has(`${i + dx},${j + dy}`)
+      ).length;
+    sides += diffs
+      .flatMap((dx) => diffs.map((dy) => [dx, dy]))
+      .filter(([dx, dy]) =>
+        !plots.has(`${i + dx},${j}`) &&
+        !plots.has(`${i},${j + dy}`)
+      ).length;
+  }
+  return sides;
+}
+
+function region_fence_cost(region: Region, bulk: boolean): number {
   const area = region.plots.size;
+  if (bulk) {
+    const side_count = get_number_of_sides(region.plots);
+    return area * side_count;
+  }
   const perimeter = get_perimeter(region.plots);
   return area * perimeter;
 }
 
-function tabulate_fence_cost(garden: string[]): number {
-  const regions = identify_regions(garden);
-  return regions.map<number>(region_fence_cost).reduce((a, b) => a + b, 0);
+function tabulate_fence_cost(regions: Region[]): number {
+  const regular_cost = (region: Region) => region_fence_cost(region, false);
+  return regions.map<number>(regular_cost).reduce((a, b) => a + b, 0);
+}
+
+function tabulate_bulk_fence_cost(regions: Region[]): number {
+  const bulk_cost = (region: Region) => region_fence_cost(region, true);
+  return regions.map<number>(bulk_cost).reduce((a, b) => a + b, 0);
 }
 
 if (import.meta.main) {
@@ -128,8 +158,14 @@ if (import.meta.main) {
 
   try {
     const contents = await parse_input(filePath);
+    const regions = identify_regions(contents);
     console.log(
-      `The total cost of fencing will be ${tabulate_fence_cost(contents)}`,
+      `The total cost of fencing will be ${tabulate_fence_cost(regions)}`,
+    );
+    console.log(
+      `The cost of fencing after a bulk discount will be ${
+        tabulate_bulk_fence_cost(regions)
+      }`,
     );
   } catch (error) {
     console.error("Error reading file:", (error as Error).message);
