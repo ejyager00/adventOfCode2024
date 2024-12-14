@@ -60,6 +60,38 @@ function quadrant_product(
   return quadrant_counts.reduce((a, b) => a * b, 1);
 }
 
+function get_variance(robots: Robot[]): number {
+  const x_mean = robots.reduce((sum, robot) => sum + robot.x, 0) /
+    robots.length;
+  const y_mean = robots.reduce((sum, robot) => sum + robot.y, 0) /
+    robots.length;
+  const x_variance = robots.reduce((sum, robot) => {
+    const diff = robot.x - x_mean;
+    return sum + diff * diff;
+  }, 0) / robots.length;
+  const y_variance = robots.reduce((sum, robot) => {
+    const diff = robot.y - y_mean;
+    return sum + diff * diff;
+  }, 0) / robots.length;
+  return x_variance * y_variance;
+}
+
+function min_variance(robots: Robot[], height: number, width: number): number {
+  let variance = get_variance(robots);
+  let variance_time = 0;
+  for (let i = 1; i < height * width; i++) {
+    for (let j = 0; j < robots.length; j++) {
+      [robots[j].x, robots[j].y] = new_location(robots[j], 1, height, width);
+    }
+    const new_variance = get_variance(robots);
+    if (new_variance < variance) {
+      variance = new_variance;
+      variance_time = i;
+    }
+  }
+  return variance_time;
+}
+
 if (import.meta.main) {
   const filePath = Deno.args[0];
   if (!filePath) {
@@ -76,6 +108,11 @@ if (import.meta.main) {
       `The safety factor after 100 seconds is ${
         quadrant_product(robots, time, height, width)
       }.`,
+    );
+    console.log(
+      `The Christmas tree appears after ${
+        min_variance(robots, height, width)
+      } seconds.`,
     );
   } catch (error) {
     console.error("Error reading file:", (error as Error).message);
