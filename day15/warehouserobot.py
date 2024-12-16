@@ -35,19 +35,22 @@ def move_robot(warehouse: list[list[str]], move: str, robot: tuple[int, int]) ->
         neighbor = warehouse[loc[0]+dyx[0]][loc[1]+dyx[1]]
     if neighbor == "#":
         return robot
-    warehouse[robot[0]][robot[1]]="."
-    warehouse[robot[0]+dyx[0]][robot[1]+dyx[1]]="@"
     if shifting>1:
         warehouse[robot[0]+shifting*dyx[0]][robot[1]+shifting*dyx[1]]="O"
+    warehouse[robot[0]][robot[1]]="."
+    warehouse[robot[0]+dyx[0]][robot[1]+dyx[1]]="@"
     return robot[0]+dyx[0], robot[1]+dyx[1]
 
 def sum_gps(warehouse: list[list[str]]) -> int:
     total = 0
     for i, row in enumerate(warehouse):
         for j, spot in enumerate(row):
-            if spot=='O':
+            if spot=='O' or spot=="[":
                 total += i*100+j
     return total
+
+def expand_warehouse(warehouse: list[list[str]]) -> list[list[str]]:
+    return [[x for x in "".join(row).replace("#","##").replace("O","[]").replace(".","..").replace("@","@.")] for row in warehouse]
 
 def move_and_tally(warehouse: list[list[str]], moves: tuple[str, ...]) -> int:
     loc = locate_robot(warehouse)
@@ -62,6 +65,7 @@ if __name__ == '__main__':
 
     try:
         warehouse, movements = parse_input(sys.argv[1])
+        big_warehouse = expand_warehouse(warehouse)
         print(f"The sum of all boxes' GPS coordinates is {move_and_tally(warehouse, movements)}.")
     except FileNotFoundError:
         print(f"Error: Could not find input file '{input_file}'")
