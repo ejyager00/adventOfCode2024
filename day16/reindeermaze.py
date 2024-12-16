@@ -1,17 +1,16 @@
 import sys
 import networkx as nx
 
-def parse_input(filename: str):
+def parse_input(filename: str) -> list[str]:
     with open(filename) as f:
         lines = f.read().strip().split("\n")
     return lines
 
-def create_graph(lines):
+def create_graph(lines: list[str]) -> tuple[nx.DiGraph, tuple[complex, complex], complex]:
     G = nx.DiGraph()
     fourdir = (1, -1, 1j, -1j)
-    start = None
-    end = None
-
+    start: tuple[complex, complex] | None = None
+    end: complex | None = None
     for i, line in enumerate(lines):
         for j, x in enumerate(line):
             if x == "#":
@@ -33,12 +32,15 @@ def create_graph(lines):
     for dz in fourdir:
         G.add_edge((end, dz), "end", weight=0)
 
+    if start is None or end is None:
+        raise ValueError("Start or end not found")
+
     return G, start, end
 
-def get_shortest_path_length(G, start):
+def get_shortest_path_length(G: nx.DiGraph, start: tuple[complex, complex]) -> float:
     return nx.shortest_path_length(G, start, "end", weight="weight")
 
-def count_unique_positions(G, start):
+def count_unique_positions(G: nx.DiGraph, start: tuple[complex, complex]) -> int:
     return len({z for path in nx.all_shortest_paths(G, start, "end", weight="weight") 
                 for z, _ in path[:-1]})
 
