@@ -43,29 +43,18 @@ def move_robot(warehouse: list[list[str]], move: str, robot: tuple[int, int]) ->
     return robot[0]+dyx[0], robot[1]+dyx[1]
 
 def find_moved_boxes(warehouse: list[list[str]], box: tuple[int, int], dy: int) -> tuple[list[tuple[int, int]], bool]:
-    if warehouse[box[0]+dy][box[1]]=="#" or warehouse[box[0]+dy][box[1]+1]=="#":
-        return None, True
-    if warehouse[box[0]+dy][box[1]]=="[":
-        boxes, blocked = find_moved_boxes(warehouse, (box[0]+dy,box[1]), dy)
-        if blocked:
-            return None, True
-        return [box]+boxes, False
+    idx = 0
     boxes = [box]
-    if warehouse[box[0]+dy][box[1]]=="]":
-        left_boxes, blocked = find_moved_boxes(warehouse, (box[0]+dy,box[1]-1), dy)
-        if blocked:
+    while idx<len(boxes):
+        if "#" in warehouse[boxes[idx][0]+dy][boxes[idx][1]:boxes[idx][1]+2]:
             return None, True
-        boxes+=left_boxes
-    if warehouse[box[0]+dy][box[1]+1]=="[":
-        right_boxes, blocked = find_moved_boxes(warehouse, (box[0]+dy,box[1]+1), dy)
-        if blocked:
-            return None, True
-        boxes+=right_boxes
+        for i, x in enumerate(warehouse[boxes[idx][0]+dy][boxes[idx][1]-1:boxes[idx][1]+2]):
+            if x=="[" and (boxes[idx][0]+dy, boxes[idx][1]-1+i) not in boxes:
+                boxes.append((boxes[idx][0]+dy, boxes[idx][1]-1+i))
+        idx+=1
     return boxes, False
 
 def move_robot_expanded(warehouse: list[list[str]], move: str, robot: tuple[int, int]) -> tuple[int, int]:
-    print_warehouse(warehouse)
-    print()
     dyx = get_direction(move)
     if dyx[0]==0:
         return move_robot(warehouse, move, robot)
@@ -122,6 +111,5 @@ if __name__ == '__main__':
         big_warehouse = expand_warehouse(warehouse)
         print(f"The sum of all boxes' GPS coordinates is {move_and_tally(warehouse, movements)}.")
         print(f"The sum of all boxes' GPS coordinates in the big warehouse is {move_and_tally(big_warehouse, movements, big=True)}.")
-        print_warehouse(big_warehouse)
     except FileNotFoundError:
         print(f"Error: Could not find input file '{sys.argv[1]}'")
