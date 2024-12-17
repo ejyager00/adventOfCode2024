@@ -19,38 +19,27 @@ class ThreeBit:
 
     def _op(self, instr: int, opd: int) -> int:
         jump = 2
-        print(f"program {instr},{opd} has result ", end='')
         match instr:
             case 0:
                 if opd==7: raise ValueError(f"{opd} is illegal operand for instruction {instr}")
                 self.reg_a //= 2**(opd if opd<4 else self._get_reg_by_num(opd))
-                print(f"register A = {self.reg_a}")
             case 1:
                 self.reg_b ^= opd
-                print(f"register B = {self.reg_b}")
             case 2:
                 if opd==7: raise ValueError(f"{opd} is illegal operand for instruction {instr}")
                 self.reg_b = (opd if opd<4 else self._get_reg_by_num(opd))%8
-                print(f"register B = {self.reg_b}")
             case 3:
                 if self.reg_a != 0:
                     self.instr_point = opd
                     jump = 0
-                    print(f"jump to {self.instr_point}")
-                else:
-                    print("no jump")
             case 4:
                 self.reg_b ^= self.reg_c
-                print(f"register B = {self.reg_b}")
             case 5:
                 self.output.append((opd if opd<4 else self._get_reg_by_num(opd))%8)
-                print(f"output {self.output[-1]}")
             case 6:
                 self.reg_b = self.reg_a // 2**(opd if opd<4 else self._get_reg_by_num(opd))
-                print(f"register B = {self.reg_b}")
             case 7:
                 self.reg_c = self.reg_a // 2**(opd if opd<4 else self._get_reg_by_num(opd))
-                print(f"register C = {self.reg_c}")
         return jump
 
     def run_program(self) -> str:
