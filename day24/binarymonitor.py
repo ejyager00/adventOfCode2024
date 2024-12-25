@@ -1,6 +1,7 @@
 import sys
 import operator
 from collections import namedtuple
+from collections.abc import Callable
 
 class Gate:
 
@@ -30,7 +31,6 @@ def parse_input(filename: str) -> tuple[dict[str, int], list[Gate], int]:
             if g.out[0]=='z' and int(g.out[1:])>max_z:
                 max_z = int(g.out[1:])
         return (starts, gates, max_z)
-
 def get_gate_output(gates: list[Gate], gate: str) -> str:
     for g in gates:
         if str(g)[:len(gate)]==gate:
@@ -69,7 +69,7 @@ def get_monitor_output(vals: dict[str, int], gates: list[Gate], max_z: int) -> i
                 del gates[i]
     return sum([2**i if x else 0 for i, x in enumerate(result)])
 
-def get_mismatched_outputs(gates: list[Gate], max_z: int) -> tuple[str,...]:
+def get_mismatched_outputs1(gates: list[Gate], max_z: int) -> set[str]:
     output = lambda gate : get_gate_output(gates, gate)
     get_gate = lambda gate : get_gate_inputs(gates, gate)
     get_carry = lambda prop, gen : find_carry_gate(gates, prop, gen)
@@ -79,15 +79,11 @@ def get_mismatched_outputs(gates: list[Gate], max_z: int) -> tuple[str,...]:
     if (outbit0!="z00"):
         errors.update(("z00",outbit0))
     adders = [Adder(output("x00 AND y00"),None,None,None)]
-    print(f"x00 XOR y00 -> {outbit0} output")
-    print(f"x00 AND y00 -> {adders[0].carry} carry\n")
     # other bits
     for i in range(1,max_z):
         digit = str(i).zfill(2)
         partsum = output(f"x{digit} XOR y{digit}")
-        print(f"x{digit} XOR y{digit} -> {partsum} partsum")
         outgate = get_gate(f"z{digit}")
-        print(f"{str(outgate)} output")
         prop_in = list(outgate.input)
         outgate_inputs = missing_operand(partsum, adders[i-1].carry,  outgate.input)
         if (not any(outgate_inputs)): # z output is in wrong spot
@@ -114,8 +110,70 @@ def get_mismatched_outputs(gates: list[Gate], max_z: int) -> tuple[str,...]:
             else:
                 propagate = carry_gate.input[(carry_gate.input.index(generate)+1)%2]
         adders.append(Adder(carry,partsum,generate,propagate))
-    print()
-    return tuple(sorted(list(errors)))
+    return errors
+
+def isDirect(gate: Gate) -> bool:
+    return gate.input[0][0]=='x' or gate.input[1][0]=='x'
+
+def isOutput(gate: Gate) -> bool:
+    return gate.out[0]=='z'
+
+def isGate(type: str) -> Callable[[], bool]:
+    return lambda gate : gate.op == type
+
+def hasOutput(output: str) -> Callable[[], bool]:
+    return lambda gate : gate.out == output
+
+def hasInput(input: str) -> Callable[[], bool]:
+    return lambda gate : gate.input[0] == input or gate.input[1] == input
+
+def get_mismatched_outputs2(gates: list[Gate], max_z: int) -> set[str]:
+    flags = set()
+    partsums = filter(isDirect, filter(isGate('XOR'), gates))
+    for gate in partsums:
+        if "x00" in gate.input:
+            if (gate.out != "z00"):
+                flags.add(gate.out)
+            continue
+        elif gate.out == "z00":
+            flags.add(gate.out)
+        if isOutput(gate):
+            flags.add(gate.out)
+    
+    outputs = filter(isGate("XOR"), filter(lambda g : not isDirect(g), gates))
+    for gate in outputs:
+        if not isOutput(gate):
+            flags.add(gate.out)
+    
+    sumGates = filter(isOutput, gates)
+    for gate in sumGates:
+        if gate.out == f"z{str(max_z).zfill(2)}":
+            if gate.op != "OR":
+                flags.add(gate.out)
+            continue
+        elif gate.op != "XOR":
+            flags.add(gate.out)
+    
+    checkNext = []
+    for gate in partsums:
+        if gate.out in flags or gate.out == "z00":
+            continue
+        matches = filter(hasInput(gate.out), gates)
+        if len(matches) == 0:
+            checkNext.append(gate)
+            flags.add(gate.out)
+
+    for gate in checkNext:
+        intendedResult = f"z{gate.input[0][1:]}"
+        toCheck = filter(hasOutput(intendedResult), outputs)[0].input
+        orMatch = filter(isGate("OR"), filter(lambda g: g.out in toCheck, gates))[0].out
+        correctOutput = [x for x in toCheck if x != orMatch][0]
+        flags.add(correctOutput)
+
+    return flags
+
+def get_mismatched_outputs(gates: list[Gate], max_z: int) -> tuple[str,...]:
+    return tuple(sorted(list(get_mismatched_outputs1(gates, max_z).union(get_mismatched_outputs2(gates, max_z)))))
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
