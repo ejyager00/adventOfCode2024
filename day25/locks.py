@@ -16,11 +16,7 @@ def parse_input(filename: str) -> tuple[list[list[int]], list[list[int]]]:
     return (locks, keys)
 
 def count_possible_pairs(locks: list[list[int]], keys: list[list[int]]) -> int:
-    total = 0
-    for lock in locks:
-        for key in keys:
-            total += not any([l+k>5 for l, k in zip(lock, key)])
-    return total
+    return sum([not any([l+k>5 for l, k in zip(lock, key)]) for lock in locks for key in keys])
 
 
 if __name__ == '__main__':
